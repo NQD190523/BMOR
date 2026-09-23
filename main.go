@@ -1,22 +1,32 @@
 package main
 
 import (
+	"Build_my_own_redis/internal/command"
+	"Build_my_own_redis/internal/protocol"
+	"bufio"
 	"fmt"
+	"io"
 	"net"
 )
 
 func handleConnection(conn net.Conn) {
 	defer conn.Close()
-
-	buffer := make([]byte, 1024)
+	reader := bufio.NewReader(conn)
 	for {
-		n, err := conn.Read(buffer)
+		args, err := protocol.ReadCommand(reader)
 		if err != nil {
-			fmt.Println("Error reading from connection:", err)
+			if err == io.EOF {
+				fmt.Println("Client disconnected")
+			}
 			return
 		}
-		fmt.Println("Received:", string(buffer[:n]))
-		conn.Write([]byte("Hello from server!\n"))
+		if len(args) == 0 {
+			continue
+		}
+		if _, err := conn.Write(command.Handle(args)); err != nil {
+			fmt.Println("Error writing response:", err)
+			return
+		}
 	}
 }
 

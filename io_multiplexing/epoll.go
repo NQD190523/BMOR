@@ -2,7 +2,10 @@
 
 package io_multiplexing
 
-import "syscall"
+import (
+	"fmt"
+	"syscall"
+)
 
 type Epoll struct {
 	fileDescriptor int
@@ -18,8 +21,8 @@ func CreateIOMultiplexer() (*Epoll, error) {
 	}
 	return &Epoll{
 		fileDescriptor: fd,
-		epollEvents:    make([]syscall.EpollEvent, 0),
-		genericEvents:  make([]Event, 0),
+		epollEvents:    make([]syscall.EpollEvent, MaxEvents),
+		genericEvents:  make([]Event, 0, MaxEvents),
 	}, nil
 }
 
@@ -36,7 +39,7 @@ func (e *Epoll) Add(event Event) error {
 func (e *Epoll) Wait() ([]Event, error) {
 	n, err := syscall.EpollWait(e.fileDescriptor, e.epollEvents, -1)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("EpollWait failed: %w", err)
 	}
 	e.genericEvents = e.genericEvents[:0] // Clear the slice
 	for i := 0; i < n; i++ {

@@ -45,7 +45,7 @@ func ReadCommand(r *bufio.Reader) ([]string, error) {
 
 // ReadBulkString reads a bulk string from the reader and returns the arguments.
 func ReadBulkString(r *bufio.Reader, line string) ([]string, error) {
-	lenStr, err := strconv.Atoi(line[1:])
+	lenStr, err := strconv.Atoi(strings.TrimSpace(line[1:]))
 	if err != nil {
 		return nil, err
 	}

@@ -8,22 +8,27 @@ import (
 	"strings"
 )
 
+// EncodeNil encodes a nil value in the Redis protocol format.
 func EncodeNil() []byte {
 	return []byte("$-1\r\n")
 }
 
+// EncodeSingleString encodes a single string in the Redis protocol format.
 func EncodeSingleString(s string) []byte {
 	return []byte("+" + s + "\r\n")
 }
 
+// EncodeBulkString encodes a bulk string in the Redis protocol format.
 func EncodeBulkString(s string) []byte {
 	return []byte("$" + string(rune(len(s))) + "\r\n" + s + "\r\n")
 }
 
+// EncodeErrorString encodes an error string in the Redis protocol format.
 func EncodeErrorString(s string) []byte {
 	return []byte("-" + s + "\r\n")
 }
 
+// ReadCommand reads a command from the reader and returns the arguments.
 func ReadCommand(r *bufio.Reader) ([]string, error) {
 	line, err := r.ReadString('\n')
 	if err != nil {
@@ -38,6 +43,7 @@ func ReadCommand(r *bufio.Reader) ([]string, error) {
 	return ReadBulkString(r, line)
 }
 
+// ReadBulkString reads a bulk string from the reader and returns the arguments.
 func ReadBulkString(r *bufio.Reader, line string) ([]string, error) {
 	lenStr, err := strconv.Atoi(line[1:])
 	if err != nil {
